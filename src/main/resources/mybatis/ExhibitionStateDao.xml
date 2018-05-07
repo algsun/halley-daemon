@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ExhibitionStateDao">
+
+    <!-- 查询外展当前状态-->
+    <select id="findCurrentState" parameterType="java.lang.String" resultType="ExhibitionStateVO">
+        <![CDATA[
+            SELECT
+              e.id AS id,
+              e.exhibitionId AS exhibitionId,
+              e.state AS state,
+              e.beginTime AS beginTime,
+              e.endTime AS endTime,
+              e.operator AS operator
+            FROM
+              h_exhibition_state e
+            WHERE exhibitionId = #{exhibitionId}
+            ORDER BY e.id DESC
+            LIMIT 1
+        ]]>
+	</select>
+
+    <!-- 查询外展历史操作集合-->
+    <select id="getHistoryState" parameterType="java.lang.String" resultType="ExhibitionStateVO">
+        <![CDATA[
+
+            SELECT
+              exhibitionId,
+              state,
+              beginTime,
+              endTime,
+              operator
+            FROM
+              h_exhibition_state
+            WHERE exhibitionId = #{value}
+
+        ]]>
+	</select>
+
+    <!-- 查询所有路径-->
+    <select id="getALLPathPO" parameterType="java.lang.String" resultType="PathPO">
+        <![CDATA[
+
+                  SELECT
+                    path.id            as id,
+                    path.exhibitionId  as exhibitionId,
+                    path.longitude   as longitude,
+                    path.latitude      as latitude,
+                    path.dataType as dataType,
+                    path.destinationName as destinationName
+                FROM
+                    h_path AS path
+                 WHERE
+                  path.exhibitionId=#{value}
+                  AND
+                  (path.destinationName<>'' AND path.destinationName IS NOT NULL)
+                  order by id
+        ]]>
+	</select>
+
+    <!-- 获取出发点-->
+    <select id="getStartDestination" parameterType="java.lang.String" resultType="PathPO">
+        <![CDATA[
+
+            SELECT
+                    path.id            as id,
+                    path.exhibitionId  as exhibitionId,
+                    path.longitude   as longitude,
+                    path.latitude      as latitude,
+                    path.dataType as dataType,
+                    path.destinationName as destinationName
+                FROM
+                    h_path AS path
+                WHERE
+                    path.exhibitionId = #{value}
+                 ORDER BY
+                      path.id
+                 ASC
+                   LIMIT 1
+        ]]>
+	</select>
+
+    <select id="getNearBy" parameterType="java.util.Map" resultType="PathPO">
+        <![CDATA[
+          SELECT
+            a.id,
+            a.exhibitionId,
+            a.longitude,
+            a.latitude
+          FROM
+            (
+            SELECT
+                *,
+                ABS(longitude - #{longitude}) AS lngSub,
+                ABS(latitude - #{latitude}) AS latSub
+            FROM
+               `h_path_points`
+            WHERE exhibitionId = #{exhibitionId}
+            ) a
+          ORDER BY
+            a.lngSub,
+            a.latSub
+          ASC LIMIT 1;
+        ]]>
+    </select>
+</mapper>

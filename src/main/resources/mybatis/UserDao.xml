@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserDao">
+
+    <!-- 根据外展ID查询车辆 -->
+    <select id="findUsersByExhibitionId" parameterType="java.lang.String"
+            resultType="UserVO">
+        <![CDATA[
+            SELECT
+              tu.id,
+              tu.userName,
+              tu.userEmail,
+              tu.mobile
+            FROM
+              h_user hu,
+              t_users tu
+            WHERE hu.userId = tu.id
+              AND hu.exhibitionId = #{exhibitionId}
+        ]]>
+    </select>
+
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%t] %C{2} (%F:%L) - %m%n"/>
+        </Console>
+
+        <RollingFile name="file"
+                fileName="${sys:catalina.home}/logs/halley-daemon/app.log"
+                filePattern="${sys:catalina.home}/logs/halley-daemon/app-$${date:yyyy-MM-dd}/%d{MM-dd}--%i.log">
+            <PatternLayout pattern="%d %-5p %C{2} (%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+
+        <SMTP name="SMTPAppender"
+              smtpHost="smtp.mxhichina.com"
+              smtpPort="25"
+              from="jian.kong@microwise-system.com"
+              to="li.jianfei@microwise-system.com"
+              subject="halley-daemon【galaxy.smart-museum.com】"
+              smtpUsername="jian.kong@microwise-system.com"
+              smtpPassword="Abc123456"
+              smtpDebug="false"
+              bufferSize="50">
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </SMTP>
+    </appenders>
+    <loggers>
+        <root level="INFO">
+            <appender-ref ref="console"/>
+            <appender-ref ref="file"/>
+            <appender-ref ref="SMTPAppender" level="error"/>
+        </root>
+    </loggers>
+</configuration>

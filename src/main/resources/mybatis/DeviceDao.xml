@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="DeviceDao">
+
+    <!-- 根据外展ID查询节点设备 -->
+    <select id="findNodeListByExhibitionId" parameterType="java.lang.String"  resultType="NodeInfoPO">
+        <![CDATA[
+        SELECT
+          n.nodeId,
+          n.nodeName
+        FROM
+          h_device d,
+          m_nodeinfo n
+        WHERE d.deviceId = n.nodeId
+          AND d.deviceType = 2
+          AND d.carId IN
+          (SELECT
+            c.id
+          FROM
+            h_exhibition e,
+            h_car c
+          WHERE e.id = c.exhibitionId
+            AND e.id = #{exhibitionId})
+        ]]>
+    </select>
+
+    <!-- 根据外展ID、监测指标ID查询节点设备 -->
+    <select id="findNodeListBySensorId" parameterType="java.util.Map"  resultType="NodeInfoPO">
+        <![CDATA[
+            SELECT
+              ni.nodeId,
+              ni.nodeName
+            FROM
+              m_nodeinfo ni,
+              m_nodesensor ns
+            WHERE ni.nodeId = ns.nodeId
+              AND ns.sensorPhysicalId = #{sensorPhysicalId}
+              AND ni.nodeId IN(SELECT
+              n.nodeId
+            FROM
+              h_device d,
+              m_nodeinfo n
+            WHERE d.deviceId = n.nodeId
+              AND d.deviceType = 2
+              AND d.carId IN
+              (SELECT
+                c.id
+              FROM
+                h_exhibition e,
+                h_car c
+              WHERE e.id = c.exhibitionId
+                AND e.id = #{exhibitionId}))
+        ]]>
+    </select>
+    <!-- 根据外展ID查询车辆 -->
+    <select id="findCarsByExhibitionId" parameterType="java.lang.String"
+            resultType="CarPO">
+            <![CDATA[
+                SELECT
+                    car.id            as id,
+                    car.exhibitionId  as exhibitionId,
+                    car.plateNumber   as plateNumber,
+                    car.director      as director,
+                    car.directorPhone as directorPhone
+                FROM
+                    h_car AS car
+                WHERE
+                    car.exhibitionId = #{value}
+                ORDER BY car.id
+        ]]>
+    </select>
+
+
+    <!-- 查询区域下设备实时状态 -->
+    <select id="findNodeInfo" resultType="RealtimeDataVO"
+            parameterType="java.lang.String">
+        <![CDATA[
+			SELECT
+              n.nodeid AS nodeId,
+              n.nodeName AS nodeName,
+              m.lowvoltage AS lowVoltage,
+              m.anomaly AS anomaly,
+              m.deviceMode AS deviceMode,
+              z.zoneName AS zoneName,
+              n.roomid AS zoneId,
+              b.stamp AS stamp
+            FROM
+              m_nodeinfo AS n
+              INNER JOIN m_nodeinfomemory AS m
+                ON m.nodeid = n.nodeid
+              INNER JOIN m_nodesensor AS b
+                ON b.nodeid = n.nodeid
+              LEFT JOIN t_zone AS z
+                ON n.roomid = z.zoneId
+            WHERE n.nodeid = #{nodeId}
+            GROUP BY n.nodeid
+		]]>
+	</select>
+
+    <!-- 查询一个设备已经激活的检测指标对应的实时数据值 -->
+    <select id="findNodeSensor" resultType="DeviceDataVO"
+            parameterType="java.util.Map">
+        <![CDATA[
+            SELECT
+              m.sensorPhysicalId,
+              m.sensorPhysicalValue,
+              m.state,
+              n.showType,
+              n.cn_name,
+              n.units
+            FROM
+              m_nodesensor m
+              INNER JOIN m_sensorinfo n
+                ON m.sensorPhysicalid = n.sensorPhysicalid
+            WHERE n.isActive = 1
+              AND m.nodeid = #{nodeId}
+		]]>
+        <if test="sensorPhysicalIdList !=null">
+            AND
+            m.sensorPhysicalid
+            IN
+            <foreach collection="sensorPhysicalIdList" index="index"
+                     item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>

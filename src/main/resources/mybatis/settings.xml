@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD SQL Map Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <!-- 实体例子 -->
+        <!--
+        <typeAlias alias="User" type="com.microwise.halley.bean.User" />
+        -->
+
+        <typeAlias alias="ExhibitionVO" type="com.microwise.halley.bean.vo.ExhibitionVO"/>
+        <typeAlias alias="RelicVO" type="com.microwise.halley.bean.vo.RelicVO"/>
+        <typeAlias alias="CarPO" type="com.microwise.halley.bean.po.CarPO"/>
+        <typeAlias alias="PackingListVO" type="com.microwise.halley.bean.vo.PackingListVO"/>
+        <typeAlias alias="PackingRelicVO" type="com.microwise.halley.bean.vo.PackingRelicVO"/>
+        <typeAlias alias="NodeInfoPO" type="com.microwise.halley.bean.po.NodeInfoPO"/>
+        <typeAlias alias="RealtimeDataVO" type="com.microwise.halley.bean.vo.RealtimeDataVO"/>
+        <typeAlias alias="DeviceDataVO" type="com.microwise.halley.bean.vo.DeviceDataVO"/>
+        <typeAlias alias="ExhibitionStateVO" type="com.microwise.halley.bean.vo.ExhibitionStateVO"/>
+        <typeAlias alias="PathPointsVO" type="com.microwise.halley.bean.vo.PathPointsVO"/>
+        <typeAlias alias="UserVO" type="com.microwise.halley.bean.vo.UserVO"/>
+        <typeAlias alias="AlarmConfigsVO" type="com.microwise.halley.bean.vo.AlarmConfigsVO"/>
+        <typeAlias alias="RouteHistoryPO" type="com.microwise.halley.bean.po.RouteHistoryPO"/>
+        <typeAlias alias="AlarmPO" type="com.microwise.halley.bean.po.AlarmPO"/>
+        <typeAlias alias="LocationVO" type="com.microwise.halley.bean.vo.LocationVO"/>
+        <typeAlias alias="LocationDataVO" type="com.microwise.halley.bean.vo.LocationDataVO"/>
+        <typeAlias alias="RealtimeDataVO" type="com.microwise.halley.bean.vo.RealtimeDataVO"/>
+        <typeAlias alias="PathPO" type="com.microwise.halley.bean.po.PathPO"/>
+    </typeAliases>
+
+
+    <mappers>
+        <!-- 映射例子 -->
+        <!--
+        <mapper resource="mybatis/UserDao.xml"/>
+        -->
+        <mapper resource="mybatis/CarDao.xml"/>
+        <mapper resource="mybatis/ExhibitionDao.xml"/>
+        <mapper resource="mybatis/PackingListDao.xml"/>
+        <mapper resource="mybatis/PackingRelicDao.xml"/>
+        <mapper resource="mybatis/DeviceDao.xml"/>
+        <mapper resource="mybatis/ExhibitionStateDao.xml"/>
+        <mapper resource="mybatis/UserDao.xml"/>
+        <mapper resource="mybatis/PathDao.xml"/>
+        <mapper resource="mybatis/RouteHistoryDao.xml"/>
+        <mapper resource="mybatis/AlarmDao.xml"/>
+        <mapper resource="mybatis/LocationDao.xml"/>
+    </mappers>
+</configuration>

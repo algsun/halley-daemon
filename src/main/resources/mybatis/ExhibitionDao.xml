@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ExhibitionDao">
+
+
+    <!-- 从出库记录记录中同步外展记录 -->
+    <insert id="syncExhibitions" parameterType="java.lang.String"  useGeneratedKeys="true">
+        <selectKey keyProperty="id" resultType="java.lang.Integer"
+                   order="AFTER">
+            select LAST_INSERT_ID() AS id
+        </selectKey>
+        INSERT INTO h_exhibition (beginTime, endTime, outEventId)
+        SELECT
+            e.beginTime,
+            e.endTime,
+            oe.id
+        FROM
+            o_out_event oe
+            LEFT JOIN h_exhibition e
+                ON oe.id = e.outEventId
+        WHERE eventType = 1
+            AND state = 1
+            AND e.id IS NULL
+            AND oe.siteId = #{siteId}
+    </insert>
+
+    <!-- 查询 外展记录 -->
+    <select id="findExhibitionList" parameterType="java.lang.String" resultType="ExhibitionVO">
+	    <![CDATA[
+            SELECT
+              e.id AS exhibitionId,
+              oe.id AS outEventId,
+              oe.useFor,
+              oe.beginDate AS estimatedBeginTime,
+              oe.endDate AS estimatedEndTime,
+              oe.applicant,
+              e.beginTime,
+              e.endTime,
+              es.state
+            FROM
+              o_out_event oe
+              LEFT JOIN h_exhibition e
+                ON oe.id = e.outEventId
+              LEFT JOIN
+                (SELECT
+                  exhibitionId,
+                  state
+                FROM
+                  (SELECT
+                    exhibitionId,
+                    state
+                  FROM
+                    h_exhibition_state hes
+                  ORDER BY beginTime DESC) tmp
+                GROUP BY exhibitionId) es
+                ON e.id = es.exhibitionId
+            WHERE oe.eventType = 1
+              AND oe.state = 1
+              AND oe.siteId = #{siteId}
+        ]]>
+        <if test="state != 5">
+            <if test="state == 0">
+                AND es.state IS NULL
+            </if>
+            <if test="state !=0">
+                AND es.state = #{state}
+            </if>
+        </if>
+	</select>
+
+    <!-- 查询 外展记录 -->
+    <select id="findExhibitionListNotEnd" resultType="ExhibitionVO">
+        <![CDATA[
+            SELECT
+              e.id AS exhibitionId,
+              oe.id AS outEventId,
+              oe.useFor,
+              oe.beginDate AS estimatedBeginTime,
+              oe.endDate AS estimatedEndTime,
+              oe.applicant,
+              e.beginTime,
+              e.endTime
+            FROM
+              o_out_event oe
+              INNER JOIN h_exhibition e
+                ON oe.id = e.outEventId
+              INNER JOIN
+                (SELECT
+                  exhibitionId,
+                  state
+                FROM
+                  (SELECT
+                    exhibitionId,
+                    state
+                  FROM
+                    h_exhibition_state hes
+                  ORDER BY beginTime DESC) tmp
+                GROUP BY exhibitionId) es
+                ON e.id = es.exhibitionId
+                AND es.state = 2
+        ]]>
+    </select>
+
+
+    <!-- 查询 外展记录 -->
+    <select id="findExhibitionRelicList" parameterType="java.lang.Integer" resultType="RelicVO">
+        <![CDATA[
+           SELECT
+              hr.id,
+              hr.totalCode,
+              hr.tagCode,
+              hr.catalogCode,
+              hr.typeCode,
+              hr.name,
+              e.name AS era,
+              l.name AS LEVEL,
+              t.name AS texture,
+              hr.count,
+              er.outDate
+           FROM
+              h_exhibition he
+              INNER JOIN o_out_event oe
+                ON he.outEventId = oe.id
+              INNER JOIN o_event_relic er
+                ON oe.id = er.eventId
+              INNER JOIN o_historical_relic hr
+                ON er.relicId = hr.id
+              LEFT JOIN o_era e
+                ON hr.era = e.id
+              LEFT JOIN o_level l
+                ON hr.level = l.id
+              LEFT JOIN o_texture t
+                ON hr.texture = t.id
+           WHERE he.id = #{exhibitionId}
+        ]]>
+    </select>
+</mapper>

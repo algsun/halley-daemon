@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RouteHistoryDao">
+
+    <!-- 保存历史线路信息 -->
+    <insert id="saveRouteHistory" parameterType="RouteHistoryPO" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO h_route_history (carId, longitude, latitude, `time`)
+        VALUES
+          (#{carId}, #{longitude}, #{latitude}, #{time}) ;
+    </insert>
+
+    <select id="findRouteHistory" parameterType="java.util.Map" resultType="RouteHistoryPO">
+        <![CDATA[
+            SELECT
+              id,
+              carId,
+              longitude,
+              latitude,
+              `time`
+            FROM
+              h_route_history
+            WHERE carId = #{carId}
+              AND `time` = #{time}
+        ]]>
+    </select>
+
+    <select id="findRouteHistoryList" parameterType="java.lang.Integer" resultType="RouteHistoryPO">
+        <![CDATA[
+                SELECT
+                    id,
+                    carId,
+                    longitude,
+                    latitude,
+                    `time`
+                FROM
+                    h_route_history
+                WHERE
+                    carId=#{carId}
+                ORDER BY `time` DESC
+        ]]>
+    </select>
+
+    <select id="findLastConversionId" resultType="int"
+            parameterType="java.util.Map">
+        <![CDATA[
+            SELECT
+              (h.`id`)
+            FROM
+              h_route_history rh
+              INNER JOIN `${locationId}` h
+                ON rh.`time` = h.`createtime`
+            WHERE rh.`carId` = #{carId}
+            AND h.`sensorPhysicalid`=12284
+            ORDER BY rh.`time` DESC
+            LIMIT 1
+        ]]>
+    </select>
+
+    <select id="findLastConversionId2" resultType="int"
+            parameterType="java.util.Map">
+        <![CDATA[
+            SELECT
+              id
+            FROM
+              `${locationId}`
+            WHERE createtime >=
+              (SELECT
+                beginTime
+              FROM
+                `h_exhibition_state`
+              WHERE exhibitionId = #{exhibitionId}
+                AND state = 2
+                order by beginTime DESC LIMIT 1)
+              AND sensorPhysicalid = 12284
+            LIMIT 1
+        ]]>
+    </select>
+
+    <select id="findLastConversionId2Count" resultType="int"
+            parameterType="java.util.Map">
+        <![CDATA[
+            SELECT
+              count(id)
+            FROM
+              `${locationId}`
+            WHERE createtime >=
+              (SELECT
+                beginTime
+              FROM
+                `h_exhibition_state`
+              WHERE exhibitionId = #{exhibitionId}
+                AND state = 2)
+              AND sensorPhysicalid = 12284
+            LIMIT 1
+        ]]>
+    </select>
+
+    <select id="findLastConversionIdCount" resultType="int"
+            parameterType="java.util.Map">
+        <![CDATA[
+            SELECT
+              count(h.`id`)
+            FROM
+              h_route_history rh
+              INNER JOIN `${locationId}` h
+                ON rh.`time` = h.`createtime`
+            WHERE rh.`carId` = #{carId}
+            AND h.`sensorPhysicalid`=12284
+            ORDER BY rh.`time` DESC
+            LIMIT 1
+        ]]>
+    </select>
+
+
+</mapper>

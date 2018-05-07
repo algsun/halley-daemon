@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CarDao">
+
+    <!-- 根据外展ID查询车辆 -->
+    <select id="findCarsByExhibitionId" parameterType="java.lang.String"
+            resultType="CarPO">
+            <![CDATA[
+                SELECT
+                    car.id            as id,
+                    car.exhibitionId  as exhibitionId,
+                    car.plateNumber   as plateNumber,
+                    car.director      as director,
+                    car.directorPhone as directorPhone
+                FROM
+                    h_car AS car
+                WHERE
+                    car.exhibitionId = #{value}
+                ORDER BY car.id
+        ]]>
+    </select>
+
+    <!-- 根据设备ID查询车辆 -->
+    <select id="findCarByDeviceId" parameterType="java.util.Map" resultType="CarPO">
+        <![CDATA[
+            SELECT
+              c.id,
+              c.exhibitionId,
+              c.plateNumber,
+              c.director,
+              c.directorPhone
+            FROM
+              h_device d,
+              h_car c
+            WHERE c.id = d.carId
+              AND c.exhibitionId = #{exhibitionId}
+              AND deviceId = #{deviceId}
+        ]]>
+    </select>
+
+    <!-- 根据设备ID查询车辆 -->
+    <select id="findCarByLocationId" parameterType="java.util.Map" resultType="CarPO">
+        <![CDATA[
+            SELECT
+              c.id,
+              c.exhibitionId,
+              c.plateNumber,
+              c.director,
+              c.directorPhone
+            FROM
+              h_device d,
+              h_car c
+            WHERE c.id = d.carId
+              AND c.exhibitionId = #{exhibitionId}
+              AND deviceId = #{locationId}
+        ]]>
+    </select>
+
+    <!-- 保存车辆信息 -->
+    <insert id="saveCar" parameterType="CarPO"  useGeneratedKeys="true">
+        <selectKey keyProperty="id" resultType="java.lang.Integer"
+                   order="AFTER">
+            select LAST_INSERT_ID() AS id
+        </selectKey>
+        INSERT INTO
+        h_car(exhibitionId,plateNumber,director,directorPhone)
+        VALUES
+        (#{exhibitionId},#{plateNumber},#{director},#{directorPhone})
+    </insert>
+
+    <!-- 更新车辆信息 -->
+    <update id="updateCarPO" parameterType="CarPO">
+        <![CDATA[
+			UPDATE
+              `h_car` AS car
+            SET
+              car.`plateNumber` = #{plateNumber},
+              car.`director` = #{director},
+              car.`directorPhone` = #{directorPhone}
+            WHERE
+              car.`id` = ${id}
+		]]>
+    </update>
+</mapper>

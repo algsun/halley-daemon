@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="LocationDao">
+
+    <select id="findLocationsByCarId" parameterType="java.util.Map" resultType="LocationVO">
+        <![CDATA[
+        SELECT
+          d.`deviceId` AS id
+        FROM
+          h_device d,
+          m_location ml,
+          m_nodesensor mn
+        WHERE
+          d.`deviceId` = ml.`id` AND
+          ml.`nodeId` = mn.`nodeid` AND
+          d.`carId` = #{carId} AND
+          mn.`sensorPhysicalid`= #{sensorPhysicalId}
+        ]]>
+    </select>
+    <!-- 根据外展ID查询位置点 -->
+    <select id="findLocationsByExhibitionId" parameterType="java.lang.String"  resultType="LocationVO">
+        <![CDATA[
+        SELECT
+          n.id AS id,
+          n.locationName as locationName
+        FROM
+          h_device d,
+          m_location n
+        WHERE d.deviceId = n.id
+          AND d.deviceType = 2
+          AND d.carId IN
+          (SELECT
+            c.id
+          FROM
+            h_exhibition e,
+            h_car c
+          WHERE e.id = c.exhibitionId
+            AND e.id = #{value})
+        ]]>
+    </select>
+
+    <!-- 根据外展ID、监测指标ID查询节点设备 -->
+    <select id="findLocationsBySensorId" parameterType="java.util.Map"  resultType="LocationVO">
+        <![CDATA[
+           SELECT
+           l.id,
+           l.locationName
+           FROM h_exhibition e,
+           h_car c,
+           h_device d,
+           m_location l,
+           m_nodesensor ns
+           WHERE e.id = c.exhibitionId
+           AND c.id = d.carId
+           AND d.deviceId = l.id
+           AND l.nodeId = ns.nodeid
+           AND e.id = #{exhibitionId}
+           AND ns.sensorPhysicalid = #{sensorPhysicalId}
+        ]]>
+    </select>
+
+    <!-- 根据外展ID查询车辆 -->
+    <select id="findCarsByExhibitionId" parameterType="java.lang.String"
+            resultType="CarPO">
+            <![CDATA[
+                SELECT
+                    car.id            as id,
+                    car.exhibitionId  as exhibitionId,
+                    car.plateNumber   as plateNumber,
+                    car.director      as director,
+                    car.directorPhone as directorPhone
+                FROM
+                    h_car AS car
+                WHERE
+                    car.exhibitionId = #{value}
+                ORDER BY car.id
+        ]]>
+    </select>
+
+
+    <!-- 查询区域下设备实时状态 -->
+    <select id="findLocationData" resultType="RealtimeDataVO"
+            parameterType="java.lang.String">
+        <![CDATA[
+			SELECT DISTINCT
+				n.id		AS locationId,
+				n.nodeId    AS nodeId,
+				n.locationName		AS locationName,
+				m.lowvoltage	As lowvoltage,
+				m.anomaly		AS anomaly,
+  				m.deviceMode	AS deviceMode,
+				z.zoneName		AS zoneName,
+				n.zoneId      AS zoneId,
+				b.stamp          AS stamp
+			FROM
+				m_location			AS n
+			LEFT JOIN
+				m_nodeinfomemory	AS m ON m.nodeid = n.nodeid
+            LEFT JOIN
+                m_nodesensor        AS b  ON  b.nodeid=n.nodeid
+			LEFT JOIN
+				t_zone				AS z ON n.zoneId = z.zoneId
+			WHERE
+				n.id=#{locationId}
+		GROUP BY n.id
+		ORDER BY
+			m.nodeid
+		]]>
+	</select>
+
+    <!-- 查询一个设备已经激活的检测指标对应的实时数据值 -->
+    <select id="findLocationDataVO" resultType="LocationDataVO"
+            parameterType="java.util.Map">
+        <![CDATA[
+           SELECT DISTINCT
+  				m.sensorPhysicalid		AS sensorPhysicalid ,
+  				m.sensorPhysicalValue	AS sensorPhysicalValue,
+				m.state					AS state,
+				n.showType              AS showType,
+				n.cn_name               AS cnName,
+				m.stamp                 AS stamp,
+				n.units                 AS units
+			FROM
+				m_nodesensor	AS m
+		    LEFT JOIN
+		        m_sensorinfo     AS n ON m.sensorPhysicalid=n.sensorPhysicalid
+	        WHERE
+	            n.isActive=1
+	        AND
+				m.nodeid=#{nodeId}
+		]]>
+        <if test="sensorPhysicalIdList !=null">
+            AND
+            m.sensorPhysicalid
+            IN
+            <foreach collection="sensorPhysicalIdList" index="index"
+                     item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--查询位置点-->
+    <select id="findLocationById" parameterType="java.lang.String"
+            resultType="LocationVO">
+        <![CDATA[
+            SELECT
+              id,
+              locationName,
+              nodeId,
+              zoneId,
+              siteId,
+              createTime
+            FROM
+              m_location
+            WHERE id = #{value}
+        ]]>
+    </select>
+
+    <select id="findHistoryDataList" parameterType="java.util.Map"
+            resultType="LocationDataVO">
+        <![CDATA[
+	        SELECT
+              a.id AS id,
+              a.nodeid AS nodeId,
+              a.sensorPhysicalid AS sensorPhysicalid,
+              a.sensorPhysicalvalue AS sensorPhysicalvalue,
+              a.createtime AS stamp,
+              a.state AS state,
+              s.`cn_name` AS cnName,
+              s.`units` AS units,
+              s.showType AS showType
+            FROM
+              `${locationId}` AS a
+              LEFT JOIN m_sensorinfo AS s
+                ON s.sensorPhysicalid = a.sensorPhysicalid
+            WHERE a.`id` > #{id}
+		]]>
+    </select>
+
+</mapper>

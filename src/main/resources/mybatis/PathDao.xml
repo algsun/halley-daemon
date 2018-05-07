@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PathDao">
+    <!-- 根据外展ID查询预设路线拐点集合 -->
+    <select id="findExhibitionPathPoints" parameterType="java.lang.String"
+            resultType="PathPointsVO">
+            <![CDATA[
+                SELECT
+                    p.id            as id,
+                    p.exhibitionId  as exhibitionId,
+                    p.longitude   as longitude,
+                    p.latitude      as latitude
+                FROM
+                    h_path_points AS p
+                WHERE
+                    p.exhibitionId = #{value}
+                ORDER BY p.id
+        ]]>
+    </select>
+
+    <!-- 根据外展ID和设备ID查询报警配置信息 -->
+    <select id="findAlarmConfigs" parameterType="java.lang.String" resultType="AlarmConfigsVO">
+        <![CDATA[
+            SELECT
+                *
+              FROM
+                `h_config` con
+            WHERE
+                con.`exhibitionId` = #{value}
+        ]]>
+    </select>
+
+    <!-- 根据外展ID查询预设路线拐点集合 -->
+    <select id="findCurrentLatLng" parameterType="java.lang.String"
+            resultType="PathPointsVO">
+            <![CDATA[
+                SELECT
+                    p.id            as id,
+                    p.exhibitionId  as exhibitionId,
+                    p.longitude   as longitude,
+                    p.latitude      as latitude
+                FROM
+                    h_path_points AS p
+                WHERE
+                    p.exhibitionId = #{value}
+                ORDER BY p.id
+        ]]>
+    </select>
+
+</mapper>
